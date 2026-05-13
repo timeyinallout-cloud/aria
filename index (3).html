@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<!-- ARIA v3.0 - Puter CDN - No REST API - Fixed -->
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script src="https://js.puter.com/v2/"></script>
+<title>ARIA — Personal AI Agent</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090f;--surface:rgba(18,18,32,0.9);--border:rgba(99,102,241,0.18);
+  --accent:#6366f1;--accent2:#8b5cf6;--text:#e2e2f0;--muted:rgba(226,226,240,0.38);
+  --claude:#d97706;--azure:#0ea5e9;--puter:#22c55e;
+  --green:#22c55e;--yellow:#f59e0b;--red:#ef4444;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;display:flex;flex-direction:column;height:100vh}
+#top-zone{flex-shrink:0}
+#messages{flex:1 1 0;overflow-y:auto;padding:20px;min-height:0}
+#bottom-zone{flex-shrink:0}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:rgba(99,102,241,0.3);border-radius:2px}
+#header{background:rgba(9,9,15,0.97);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 0 16px rgba(99,102,241,0.5)}
+.logo-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:3px;color:#a5b4fc;text-shadow:0 0 20px rgba(99,102,241,0.7)}
+.logo-sub{font-size:9px;color:var(--muted);letter-spacing:2px}
+.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.status-pill{display:flex;align-items:center;gap:5px;font-size:10px;letter-spacing:1px;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:#ef4444;animation:pulse 2s ease-in-out infinite}
+.dot.online{background:#22c55e}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+.badges{display:flex;gap:4px;flex-wrap:wrap}
+.badge{font-size:9px;padding:2px 7px;border-radius:10px;letter-spacing:1px;font-weight:700;cursor:default}
+.badge-on{background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#86efac}
+.badge-off{background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.15);color:var(--muted)}
+#tab-bar{background:rgba(14,14,28,0.97);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0;overflow-x:auto}
+.tab{padding:9px 18px;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.tab:hover{color:var(--text)}
+.tab.active{color:#a5b4fc;border-bottom-color:var(--accent)}
+.panel{display:none;padding:14px 20px;background:rgba(14,14,28,0.97);border-bottom:1px solid var(--border);max-height:44vh;overflow-y:auto}
+.panel.active{display:block}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;max-width:920px}
+.cfield label{display:block;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:4px}
+.cfield input,.cfield select{background:rgba(20,20,40,0.8);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:12px;outline:none;padding:8px 12px;width:100%;transition:border-color 0.2s}
+.cfield input:focus,.cfield select:focus{border-color:rgba(99,102,241,0.6)}
+.cfield select option{background:#1a1a2e}
+.cbtn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:6px;color:#fff;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:1px;padding:8px 16px;transition:all 0.2s;white-space:nowrap}
+.cbtn:hover{transform:scale(1.03);box-shadow:0 0 14px rgba(99,102,241,0.4)}
+.cbtn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.cbtn-sm{padding:5px 12px;font-size:10px}
+.cbtn-red{background:linear-gradient(135deg,#dc2626,#b91c1c)}
+.ibox{border-radius:8px;padding:9px 13px;font-size:11px;line-height:1.7;margin-bottom:8px}
+.ig{background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);color:#86efac}
+.iy{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);color:#fcd34d}
+.ir{background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);color:#fca5a5}
+.ib{background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);color:#a5b4fc}
+.cnote{font-size:10px;color:var(--muted)}
+.cnote a{color:var(--accent);text-decoration:none}
+.mchip{background:rgba(30,30,50,0.8);border:1px solid rgba(99,102,241,0.2);border-radius:6px;color:#a5b4fc;cursor:pointer;font-family:inherit;font-size:10px;padding:3px 8px;transition:all 0.15s}
+.mchip:hover{border-color:rgba(99,102,241,0.5);background:rgba(99,102,241,0.1)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.mem-item{display:flex;align-items:flex-start;gap:8px;background:rgba(20,20,40,0.5);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:11px}
+.mem-key{color:#a5b4fc;font-weight:700;min-width:100px;flex-shrink:0}
+.mem-val{color:var(--text);flex:1;word-break:break-word}
+.mem-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;flex-shrink:0;padding:0 2px}
+.mem-del:hover{color:#ef4444}
+.mem-empty{font-size:11px;color:var(--muted);text-align:center;padding:20px}
+.file-item{display:flex;align-items:center;gap:8px;background:rgba(20,20,40,0.5);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:11px}
+.file-icon{font-size:16px;flex-shrink:0}
+.file-name{color:#a5b4fc;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-size{color:var(--muted);font-size:10px;flex-shrink:0}
+.file-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;flex-shrink:0}
+.file-del:hover{color:#ef4444}
+#drop-zone{border:2px dashed rgba(99,102,241,0.3);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:10px}
+#drop-zone:hover,#drop-zone.drag-over{border-color:rgba(99,102,241,0.7);background:rgba(99,102,241,0.05)}
+#drop-zone p{font-size:12px;color:var(--muted)}
+#drop-zone span{font-size:22px}
+.mwrap{margin-bottom:18px;animation:si 0.3s ease-out}
+@keyframes si{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.muser{display:flex;justify-content:flex-end}
+.buser{background:linear-gradient(135deg,rgba(99,102,241,0.22),rgba(139,92,246,0.22));border:1px solid rgba(99,102,241,0.3);border-radius:14px 14px 3px 14px;font-size:13px;line-height:1.7;max-width:72%;padding:11px 15px;white-space:pre-wrap;word-break:break-word}
+.magent{display:flex;gap:10px;align-items:flex-start}
+.aicon{width:28px;height:28px;flex-shrink:0;border-radius:50%;margin-top:2px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:13px}
+.bagent{background:rgba(18,18,32,0.7);border:1px solid var(--border);border-radius:3px 14px 14px 14px;font-size:13px;line-height:1.8;max-width:82%;padding:12px 15px;white-space:pre-wrap;word-break:break-word;flex:1}
+.bagent.err{background:rgba(239,68,68,0.07);border-color:rgba(239,68,68,0.25)}
+.ptag{font-size:9px;letter-spacing:1px;padding:2px 6px;border-radius:4px;margin-bottom:6px;display:inline-block}
+.tc{background:rgba(217,119,6,0.15);color:var(--claude)}
+.ta{background:rgba(14,165,233,0.15);color:var(--azure)}
+.tp{background:rgba(34,197,94,0.15);color:var(--puter)}
+.tool-line{font-size:10px;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.snote{text-align:center;font-size:11px;color:var(--muted);padding:8px;margin-bottom:10px}
+#welcome{text-align:center;padding:24px 20px;max-width:800px;margin:0 auto}
+.wtitle{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#a5b4fc;text-shadow:0 0 28px rgba(99,102,241,0.6);margin-bottom:4px}
+.wsub{font-size:12px;color:var(--muted);margin-bottom:22px}
+.cgridw{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-bottom:20px}
+.card{background:rgba(24,24,44,0.5);border:1px solid rgba(99,102,241,0.12);border-radius:10px;padding:11px 13px;cursor:pointer;text-align:left;transition:all 0.2s}
+.card:hover{background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.4);transform:translateY(-2px)}
+.ci{font-size:17px;margin-bottom:4px}
+.cl{font-size:11px;font-weight:700;color:#a5b4fc;margin-bottom:2px}
+.cd{font-size:10px;color:var(--muted);line-height:1.5}
+#ibar{background:rgba(9,9,15,0.97);border-top:1px solid var(--border);padding:10px 20px}
+.irow{display:flex;gap:8px;align-items:flex-end;max-width:880px;margin:0 auto}
+.itools{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.itool{background:rgba(30,30,50,0.8);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:14px;padding:6px 8px;transition:all 0.2s}
+.itool:hover,.itool.active{border-color:rgba(99,102,241,0.5);color:#a5b4fc;background:rgba(99,102,241,0.1)}
+#uinput{background:rgba(18,18,32,0.9);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:13px;outline:none;padding:10px 13px;resize:none;flex:1;transition:border-color 0.2s;line-height:1.5}
+#uinput:focus{border-color:rgba(99,102,241,0.55)}
+#uinput::placeholder{color:var(--muted)}
+#uinput:disabled{opacity:0.4}
+#sbtn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:18px;padding:9px 13px;transition:all 0.2s;flex-shrink:0}
+#sbtn:hover:not(:disabled){transform:scale(1.06);box-shadow:0 0 16px rgba(99,102,241,0.5)}
+#sbtn:disabled{opacity:0.35;cursor:not-allowed}
+.imeta{display:flex;justify-content:space-between;font-size:9px;color:rgba(232,232,240,0.15);letter-spacing:1px;max-width:880px;margin:4px auto 0}
+#file-attach-bar{max-width:880px;margin:0 auto 4px;display:none;gap:6px;flex-wrap:wrap}
+#file-attach-bar.show{display:flex}
+.attach-chip{background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);border-radius:6px;padding:3px 8px;font-size:10px;color:#a5b4fc;display:flex;align-items:center;gap:5px}
+.attach-chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0}
+.thinking::after{content:'...';animation:dots 1.4s steps(4,end) infinite}
+@keyframes dots{0%,20%{content:'.'}40%{content:'..'}60%,100%{content:'...'}}
+code{background:rgba(0,0,0,0.35);border-radius:3px;padding:1px 5px;font-size:12px}
+pre{background:rgba(0,0,0,0.45);border:1px solid var(--border);border-radius:8px;padding:12px;overflow-x:auto;font-size:11px;line-height:1.7;margin:8px 0;white-space:pre-wrap;word-break:break-word}
+</style>
+</head>
+<body>
+<div id="top-zone">
+  <div id="header">
+    <div class="logo-wrap">
+      <div class="logo-icon">&#x1F916;</div>
+      <div>
+        <div class="logo-name">ARIA</div>
+        <div class="logo-sub">AUTONOMOUS RESEARCH & INTELLIGENCE AGENT v3.0</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="badges">
+        <span class="badge badge-off" id="badge-search">&#x1F310; SEARCH</span>
+        <span class="badge badge-off" id="badge-files">&#x1F4C1; FILES</span>
+        <span class="badge badge-off" id="badge-memory">&#x1F9E0; MEMORY</span>
+        <span class="badge badge-off" id="badge-graph">&#x1F4C5; GRAPH</span>
+      </div>
+      <div class="status-pill">
+        <div class="dot" id="sdot"></div>
+        <span id="stxt">OFFLINE</span>
+      </div>
+    </div>
+  </div>
+  <div id="tab-bar">
+    <button class="tab active" onclick="showTab('ai')">&#x1F916; AI PROVIDER</button>
+    <button class="tab" onclick="showTab('search')">&#x1F310; WEB SEARCH</button>
+    <button class="tab" onclick="showTab('files')">&#x1F4C1; FILES</button>
+    <button class="tab" onclick="showTab('memory')">&#x1F9E0; MEMORY</button>
+    <button class="tab" onclick="showTab('graph')">&#x1F4C5; MS GRAPH</button>
+  </div>
+  <div id="panel-ai" class="panel active">
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="cbtn cbtn-sm" id="btn-claude" onclick="selProvider('claude')" style="background:rgba(217,119,6,0.15);border:1px solid var(--claude);color:var(--claude)">&#x1F7E0; CLAUDE API</button>
+      <button class="cbtn cbtn-sm" id="btn-azure"  onclick="selProvider('azure')"  style="background:rgba(14,165,233,0.12);border:1px solid var(--azure);color:var(--azure)">&#x1F535; AZURE OPENAI</button>
+      <button class="cbtn cbtn-sm" id="btn-puter"  onclick="selProvider('puter')"  style="background:rgba(34,197,94,0.12);border:1px solid var(--puter);color:var(--puter)">&#x1F7E2; PUTER.JS (FREE)</button>
+    </div>
+    <div id="cfg-claude" class="cfg-panel" style="display:none">
+      <div class="cgrid">
+        <div class="cfield"><label>ANTHROPIC API KEY</label><input type="password" id="c-key" placeholder="sk-ant-api03-..."/></div>
+        <div class="cfield"><label>MODEL</label><input type="text" id="c-model" value="claude-sonnet-4-6"/></div>
+      </div>
+      <div class="row"><button class="cbtn" onclick="connectClaude()">CONNECT</button><span class="cnote">Get key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></span></div>
+    </div>
+    <div id="cfg-azure" class="cfg-panel" style="display:none">
+      <div class="cgrid">
+        <div class="cfield"><label>AZURE ENDPOINT</label><input type="text" id="a-ep" placeholder="https://YOUR-RESOURCE.openai.azure.com"/></div>
+        <div class="cfield"><label>API KEY</label><input type="password" id="a-key"/></div>
+        <div class="cfield"><label>DEPLOYMENT</label><input type="text" id="a-dep" value="gpt-4o"/></div>
+        <div class="cfield"><label>API VERSION</label><input type="text" id="a-ver" value="2024-02-01"/></div>
+      </div>
+      <div class="row"><button class="cbtn" onclick="connectAzure()">CONNECT</button></div>
+    </div>
+    <div id="cfg-puter" class="cfg-panel" style="display:none">
+      <div class="ibox ig">&#x2705; <strong>No API key needed — 100% free via Puter.js CDN.</strong><br/>You will be prompted to sign in to your free Puter account when you first send a message.</div>
+      <div id="puter-status-box" class="ibox iy" style="display:none">&#x23F3; <span id="puter-status-msg">Connecting...</span></div>
+      <div class="cgrid">
+        <div class="cfield"><label>MODEL</label>
+          <input type="text" id="p-model" value="gpt-4o"/>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">
+            <button class="mchip" onclick="pm('gpt-4o')">GPT-4o</button>
+            <button class="mchip" onclick="pm('claude-sonnet-4-6')">Claude Sonnet 4.6</button>
+            <button class="mchip" onclick="pm('google/gemini-2.5-flash')">Gemini 2.5 Flash</button>
+            <button class="mchip" onclick="pm('deepseek/deepseek-r1')">DeepSeek R1</button>
+            <button class="mchip" onclick="pm('meta-llama/llama-4-maverick')">Llama 4 Maverick</button>
+            <button class="mchip" onclick="pm('gpt-4.1-nano')">GPT-4.1 Nano (fast)</button>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <button class="cbtn" id="puter-connect-btn" onclick="connectPuter()">&#x1F517; CONNECT FREE</button>
+        <span class="cnote">Free account at <a href="https://puter.com" target="_blank">puter.com</a></span>
+      </div>
+    </div>
+  </div>
+  <div id="panel-search" class="panel">
+    <div class="ibox ig">&#x1F310; <strong>Real web search via Brave Search API.</strong></div>
+    <div class="cgrid">
+      <div class="cfield"><label>BRAVE SEARCH API KEY</label>
+        <div style="display:flex;gap:6px"><input type="password" id="brave-key" placeholder="BSA..."/><button class="cbtn" onclick="saveBrave()">SAVE</button></div>
+      </div>
+      <div class="cfield"><label>AUTO-SEARCH</label>
+        <select id="brave-auto">
+          <option value="auto">Auto</option>
+          <option value="always">Always</option>
+          <option value="off">Off</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div id="panel-files" class="panel">
+    <div class="ibox ig">&#x1F4C1; <strong>Upload files for ARIA to read and analyse.</strong></div>
+    <div id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+      <span>&#x1F4C2;</span><p>Drop files here or click to browse</p>
+    </div>
+    <input type="file" id="file-input" multiple style="display:none" accept=".pdf,.txt,.md,.csv,.json,.js,.py,.ps1,.html" onchange="handleFiles(this.files)"/>
+    <div id="file-list"><div class="mem-empty">No files uploaded yet</div></div>
+  </div>
+  <div id="panel-memory" class="panel">
+    <div class="ibox ig">&#x1F9E0; <strong>Persistent memory across sessions.</strong></div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:150px"><input type="text" id="mem-key" placeholder="Key" style="background:rgba(20,20,40,0.8);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:12px;outline:none;padding:7px 11px;width:100%"/></div>
+      <div style="flex:2;min-width:200px"><input type="text" id="mem-val" placeholder="Value" style="background:rgba(20,20,40,0.8);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:12px;outline:none;padding:7px 11px;width:100%"/></div>
+      <button class="cbtn" onclick="addMemory()">ADD</button>
+      <button class="cbtn cbtn-red" onclick="clearAllMemory()">CLEAR ALL</button>
+    </div>
+    <div id="memory-list"></div>
+  </div>
+  <div id="panel-graph" class="panel">
+    <div class="ibox ig">&#x1F4C5; <strong>Microsoft Graph API integration.</strong></div>
+    <div class="ibox iy">&#x26A0;&#xFE0F; Set redirect URI to <strong id="redirect-uri-display">your-aria-url</strong> in Azure App Registration.</div>
+    <div class="cgrid">
+      <div class="cfield"><label>CLIENT ID</label><input type="text" id="graph-client" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/></div>
+      <div class="cfield"><label>TENANT ID</label><input type="text" id="graph-tenant" placeholder="common"/></div>
+    </div>
+    <div class="row">
+      <button class="cbtn" onclick="connectGraph()">SIGN IN WITH MICROSOFT</button>
+      <button class="cbtn cbtn-red" onclick="disconnectGraph()" id="graph-disconnect" style="display:none">DISCONNECT</button>
+      <span class="cnote" id="graph-status">Not connected</span>
+    </div>
+    <div id="graph-info" style="display:none;margin-top:10px" class="ibox ig"></div>
+  </div>
+</div>
+<div id="messages">
+  <div id="welcome">
+    <div class="wtitle">Hello, Timeyin.</div>
+    <div class="wsub">Connect an AI provider, then optionally enable web search, file reading, memory, and Microsoft 365.</div>
+    <div class="cgridw">
+      <div class="card" onclick="qs(this)"><div class="ci">&#x1F310;</div><div class="cl">Web Research</div><div class="cd">Research the latest Microsoft Copilot enterprise updates in 2025</div></div>
+      <div class="card" onclick="qs(this)"><div class="ci">&#x1F4E7;</div><div class="cl">Send Email</div><div class="cd">Draft and send an email to my team about the upcoming Azure migration</div></div>
+      <div class="card" onclick="qs(this)"><div class="ci">&#x1F4C5;</div><div class="cl">Check Calendar</div><div class="cd">What meetings do I have this week?</div></div>
+      <div class="card" onclick="qs(this)"><div class="ci">&#x1F4C1;</div><div class="cl">Analyse File</div><div class="cd">Summarise the document I just uploaded</div></div>
+      <div class="card" onclick="qs(this)"><div class="ci">&#x2699;&#xFE0F;</div><div class="cl">IT Automation</div><div class="cd">Write a PowerShell script to audit inactive Azure AD accounts over 90 days</div></div>
+      <div class="card" onclick="qs(this)"><div class="ci">&#x1F4B0;</div><div class="cl">Income Ideas</div><div class="cd">Best passive income strategies for an IT consultant in 2025</div></div>
+    </div>
+  </div>
+</div>
+<div id="bottom-zone">
+  <div id="ibar">
+    <div id="file-attach-bar"></div>
+    <div class="irow">
+      <div class="itools">
+        <button class="itool" id="tool-file" title="Attach file" onclick="document.getElementById('msg-file-input').click()">&#x1F4CE;</button>
+        <button class="itool" id="tool-search" title="Force web search" onclick="toggleForceSearch()">&#x1F50D;</button>
+        <button class="itool" id="tool-graph" title="MS Graph" onclick="toggleGraphMode()">&#x1F4C5;</button>
+      </div>
+      <input type="file" id="msg-file-input" style="display:none" multiple onchange="attachFilesToMessage(this.files)"/>
+      <textarea id="uinput" rows="2" placeholder="Connect an AI provider first..." disabled></textarea>
+      <button id="sbtn" onclick="send()" disabled>&#x2191;</button>
+    </div>
+    <div class="imeta">
+      <span>ENTER TO SEND · SHIFT+ENTER FOR NEWLINE</span>
+      <span id="pmeta">NO PROVIDER CONNECTED</span>
+    </div>
+  </div>
+</div>
+<script>
+let provider=null,connected=false,loading=false,history=[];
+let forceSearch=false,graphMode=false,attachedFiles=[],sessionFiles=[];
+const C={claude:{key:'',model:'claude-sonnet-4-6'},azure:{ep:'',key:'',dep:'gpt-4o',ver:'2024-02-01'},puter:{model:'gpt-4o'},brave:{key:'',auto:'auto'},graph:{clientId:'',tenantId:'common',token:null,user:null}};
+function loadMemory(){return JSON.parse(localStorage.getItem('aria_memory')||'{}')}
+function saveMemory(m){localStorage.setItem('aria_memory',JSON.stringify(m))}
+function addMemory(){const k=document.getElementById('mem-key').value.trim(),v=document.getElementById('mem-val').value.trim();if(!k||!v){alert('Enter both a key and value.');return;}const m=loadMemory();m[k]=v;saveMemory(m);document.getElementById('mem-key').value='';document.getElementById('mem-val').value='';renderMemory();updateBadges();}
+function deleteMemory(k){const m=loadMemory();delete m[k];saveMemory(m);renderMemory();updateBadges();}
+function clearAllMemory(){if(confirm('Clear all memories?')){saveMemory({});renderMemory();updateBadges();}}
+function renderMemory(){const m=loadMemory(),keys=Object.keys(m),el=document.getElementById('memory-list');if(!keys.length){el.innerHTML='<div class="mem-empty">No memories yet.</div>';return;}el.innerHTML=keys.map(k=>'<div class="mem-item"><span class="mem-key">'+esc(k)+'</span><span class="mem-val">'+esc(m[k])+'</span><button class="mem-del" onclick="deleteMemory(\''+esc(k).replace(/'/g,"\\'")+'\')">✕</button></div>').join('');}
+function getMemoryContext(){const m=loadMemory(),keys=Object.keys(m);if(!keys.length)return '';return '\n\n## Your Memory About Timeyin:\n'+keys.map(k=>'- '+k+': '+m[k]).join('\n');}
+function handleDrop(ev){ev.preventDefault();document.getElementById('drop-zone').classList.remove('drag-over');handleFiles(ev.dataTransfer.files);}
+function handleFiles(files){Array.from(files).forEach(f=>readFile(f,false));}
+function attachFilesToMessage(files){Array.from(files).forEach(f=>readFile(f,true));document.getElementById('msg-file-input').value='';}
+function readFile(file,attachToMsg){const reader=new FileReader();reader.readAsText(file);reader.onload=e=>{let content=e.target.result;if(content.length>30000)content=content.substring(0,30000)+'\n...[truncated]';const entry={name:file.name,size:file.size,content,type:file.type};if(attachToMsg){attachedFiles.push(entry);renderAttachBar();}else{sessionFiles.push(entry);renderFileList();updateBadges();}};}
+function renderFileList(){const el=document.getElementById('file-list');if(!sessionFiles.length){el.innerHTML='<div class="mem-empty">No files uploaded yet</div>';return;}el.innerHTML=sessionFiles.map((f,i)=>'<div class="file-item"><span class="file-name">'+esc(f.name)+'</span><span class="file-size">'+Math.round(f.size/1024)+'KB</span><button class="file-del" onclick="removeFile('+i+')">✕</button></div>').join('');}
+function removeFile(i){sessionFiles.splice(i,1);renderFileList();updateBadges();}
+function renderAttachBar(){const bar=document.getElementById('file-attach-bar');if(!attachedFiles.length){bar.classList.remove('show');return;}bar.classList.add('show');bar.innerHTML=attachedFiles.map((f,i)=>'<div class="attach-chip">'+esc(f.name)+' <button onclick="removeAttach('+i+')">✕</button></div>').join('');}
+function removeAttach(i){attachedFiles.splice(i,1);renderAttachBar();}
+function getFilesContext(){const all=[...sessionFiles,...attachedFiles];if(!all.length)return '';return '\n\n## Uploaded Files:\n'+all.map(f=>'### '+f.name+'\n```\n'+f.content+'\n```').join('\n\n');}
+function saveBrave(){C.brave.key=document.getElementById('brave-key').value.trim();C.brave.auto=document.getElementById('brave-auto').value;if(!C.brave.key){alert('Enter your Brave Search API key.');return;}updateBadges();note('✅ Brave Search connected.');showTab('ai');}
+async function braveSearch(query){if(!C.brave.key)return null;try{const r=await fetch('https://api.search.brave.com/res/v1/web/search?q='+encodeURIComponent(query)+'&count=5&text_decorations=false',{headers:{'Accept':'application/json','Accept-Encoding':'gzip','X-Subscription-Token':C.brave.key}});if(!r.ok)return null;const d=await r.json();const results=(d.web?.results||[]).slice(0,5);if(!results.length)return null;return results.map(r=>'▸ '+r.title+'\n  '+r.url+'\n  '+(r.description||'')).join('\n\n');}catch{return null;}}
+function shouldSearch(msg){if(!C.brave.key)return false;if(C.brave.auto==='always')return true;if(C.brave.auto==='off')return msg.toLowerCase().startsWith('search:');const triggers=['latest','current','today','news','2025','2026','price','who is','what is the','when did','recent','update','release'];return triggers.some(t=>msg.toLowerCase().includes(t));}
+function connectGraph(){C.graph.clientId=document.getElementById('graph-client').value.trim();C.graph.tenantId=document.getElementById('graph-tenant').value.trim()||'common';if(!C.graph.clientId){alert('Enter your Azure App Client ID.');return;}const scope=encodeURIComponent('User.Read Calendars.ReadWrite Mail.Send Tasks.ReadWrite');const redirect=encodeURIComponent(location.href.split('?')[0]);window.location.href='https://login.microsoftonline.com/'+C.graph.tenantId+'/oauth2/v2.0/authorize?client_id='+C.graph.clientId+'&response_type=token&redirect_uri='+redirect+'&scope='+scope+'&response_mode=fragment';}
+function disconnectGraph(){C.graph.token=null;C.graph.user=null;document.getElementById('graph-status').textContent='Not connected';document.getElementById('graph-disconnect').style.display='none';document.getElementById('graph-info').style.display='none';updateBadges();}
+async function graphFetch(path,method,body){if(!C.graph.token)throw new Error('Microsoft Graph not connected.');const opts={method:method||'GET',headers:{'Authorization':'Bearer '+C.graph.token,'Content-Type':'application/json'}};if(body)opts.body=JSON.stringify(body);const r=await fetch('https://graph.microsoft.com/v1.0'+path,opts);if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error('Graph error: '+(e.error?.message||r.status));}return r.status===204?null:r.json();}
+async function getCalendarEvents(){const now=new Date().toISOString(),end=new Date(Date.now()+7*24*60*60*1000).toISOString(),d=await graphFetch('/me/calendarView?startDateTime='+now+'&endDateTime='+end+'&$top=10&$select=subject,start,end');if(!d?.value?.length)return 'No upcoming events.';return d.value.map(e=>'▸ '+e.subject+' — '+new Date(e.start.dateTime).toLocaleString()).join('\n');}
+async function getTasks(){const lists=await graphFetch('/me/todo/lists');if(!lists?.value?.length)return 'No task lists found.';const tasks=await graphFetch('/me/todo/lists/'+lists.value[0].id+'/tasks?$filter=status ne \'completed\'&$top=10');if(!tasks?.value?.length)return 'No open tasks.';return tasks.value.map(t=>'▸ '+t.title).join('\n');}
+(function(){const hash=window.location.hash;if(!hash.includes('access_token'))return;const params=new URLSearchParams(hash.substring(1)),token=params.get('access_token');if(!token)return;C.graph.token=token;history.replaceState(null,null,location.pathname+location.search);fetch('https://graph.microsoft.com/v1.0/me',{headers:{'Authorization':'Bearer '+token}}).then(r=>r.json()).then(u=>{C.graph.user=u;document.getElementById('graph-status').textContent='✅ '+u.displayName;document.getElementById('graph-disconnect').style.display='inline-block';const info=document.getElementById('graph-info');info.style.display='block';info.textContent='✅ Signed in as '+u.displayName;updateBadges();note('✅ MS Graph connected as '+u.displayName);}).catch(()=>{});})();
+function showTab(t){document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));var panel=document.getElementById('panel-'+t);if(panel)panel.classList.add('active');document.querySelectorAll('.tab').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("'"+t+"'")!==-1)b.classList.add('active');});if(t==='ai'&&provider){document.querySelectorAll('.cfg-panel').forEach(el=>el.style.display='none');var target=document.getElementById('cfg-'+provider);if(target)target.style.display='block';}}
+function updateBadges(){const mem=Object.keys(loadMemory()).length>0;document.getElementById('badge-search').className='badge '+(C.brave.key?'badge-on':'badge-off');document.getElementById('badge-files').className='badge '+(sessionFiles.length?'badge-on':'badge-off');document.getElementById('badge-memory').className='badge '+(mem?'badge-on':'badge-off');document.getElementById('badge-graph').className='badge '+(C.graph.token?'badge-on':'badge-off');}
+function updateRedirectUri(){document.getElementById('redirect-uri-display').textContent=location.href.split('?')[0];}
+function selProvider(p){provider=p;document.querySelectorAll('.cfg-panel').forEach(el=>el.style.display='none');var target=document.getElementById('cfg-'+p);if(target)target.style.display='block';var pai=document.getElementById('panel-ai');if(pai){document.querySelectorAll('.panel').forEach(el=>el.classList.remove('active'));pai.classList.add('active');document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab')[0].classList.add('active');}['claude','azure','puter'].forEach(x=>{var btn=document.getElementById('btn-'+x);if(!btn)return;btn.style.outline=x===p?'2px solid white':'none';btn.style.opacity=x===p?'1':'0.5';});}
+function pm(m){document.getElementById('p-model').value=m;}
+function connectClaude(){C.claude.key=document.getElementById('c-key').value.trim();C.claude.model=document.getElementById('c-model').value.trim()||'claude-sonnet-4-6';if(!C.claude.key){alert('Enter your Anthropic API key.');return;}finishConnect();}
+function connectAzure(){C.azure.ep=document.getElementById('a-ep').value.trim().replace(/\/$/,'');C.azure.key=document.getElementById('a-key').value.trim();C.azure.dep=document.getElementById('a-dep').value.trim()||'gpt-4o';C.azure.ver=document.getElementById('a-ver').value.trim()||'2024-02-01';if(!C.azure.ep||!C.azure.key){alert('Enter endpoint and API key.');return;}finishConnect();}
+function connectPuter(){C.puter.model=document.getElementById('p-model').value.trim()||'gpt-4o';const btn=document.getElementById('puter-connect-btn'),statusBox=document.getElementById('puter-status-box'),statusMsg=document.getElementById('puter-status-msg');if(typeof window.puter==='undefined'){btn.disabled=true;btn.textContent='⏳ Loading...';statusBox.style.display='block';statusMsg.textContent='Waiting for Puter.js CDN...';let tries=0;const poll=setInterval(()=>{tries++;if(typeof window.puter!=='undefined'){clearInterval(poll);btn.disabled=false;btn.textContent='🔗 CONNECT FREE';statusBox.style.display='none';finishConnect();}else if(tries>30){clearInterval(poll);btn.disabled=false;btn.textContent='🔗 CONNECT FREE';statusBox.className='ibox ir';statusMsg.textContent='Puter.js failed to load. Refresh and try again.';}},200);return;}finishConnect();}
+function finishConnect(){connected=true;document.getElementById('sdot').className='dot online';document.getElementById('stxt').textContent='ONLINE';document.getElementById('pmeta').textContent=plabel().toUpperCase()+' ACTIVE';setInput(true);note('✅ Connected via '+plabel()+' — ARIA is ready.');}
+function plabel(){return{claude:'Claude API',azure:'Azure OpenAI',puter:'Puter.js (Free)'}[provider]||provider;}
+function ptag(){return{claude:'tc',azure:'ta',puter:'tp'}[provider]||'';}
+function setInput(on){document.getElementById('uinput').disabled=!on;document.getElementById('sbtn').disabled=!on;document.getElementById('uinput').placeholder=on?'Ask ARIA anything...':'Connect an AI provider first...';}
+function toggleForceSearch(){if(!C.brave.key){showTab('search');note('⚠️ Set up Brave Search first.');return;}forceSearch=!forceSearch;document.getElementById('tool-search').classList.toggle('active',forceSearch);}
+function toggleGraphMode(){if(!C.graph.token){showTab('graph');note('⚠️ Connect Microsoft Graph first.');return;}graphMode=!graphMode;document.getElementById('tool-graph').classList.toggle('active',graphMode);}
+function buildSystemPrompt(){let sys='You are ARIA, a highly capable personal AI agent for Timeyin, an IT consultant with expertise in Microsoft 365, Azure, Intune, and enterprise infrastructure. Timeyin also has interests in anime/manga production, YouTube content creation, and online income generation.\n\nBe proactive, concise, and professional. Use code blocks for scripts. Use headers and bullets for structured answers.\n\nToday: '+new Date().toDateString()+'.';sys+=getMemoryContext();if(C.graph.token&&C.graph.user)sys+='\n\n## Microsoft 365:\nUser: '+C.graph.user.displayName+' ('+C.graph.user.userPrincipalName+')';if(C.brave.key)sys+='\n\n## Web Search: Brave Search API is connected.';return sys;}
+function qs(card){if(!connected){alert('Connect a provider first.');return;}send(card.querySelector('.cd').textContent);}
+async function send(txt){const inp=document.getElementById('uinput'),msg=(txt||inp.value).trim();if(!msg||loading||!connected)return;inp.value='';loading=true;document.getElementById('sbtn').disabled=true;const w=document.getElementById('welcome');if(w)w.remove();let fullMsg=msg;if(attachedFiles.length){fullMsg+='\n\n'+getFilesContext();attachedFiles=[];renderAttachBar();}addUser(msg);const tid=addThinking();try{let graphResult=null;if(graphMode||C.graph.token){const lmsg=msg.toLowerCase();if(lmsg.includes('calendar')||lmsg.includes('meeting')){try{graphResult='\n\n## Your Calendar:\n'+await getCalendarEvents();}catch(e){graphResult='\n\n[Calendar error: '+e.message+']';}}else if(lmsg.includes('task')||lmsg.includes('todo')){try{graphResult='\n\n## Your Tasks:\n'+await getTasks();}catch(e){graphResult='\n\n[Tasks error: '+e.message+']';}}}let searchResult=null;if(forceSearch||(shouldSearch(msg)&&C.brave.key)){const query=msg.replace(/^search:\s*/i,'');addToolLine(tid,'🔍 Searching: '+query.substring(0,50)+'...');searchResult=await braveSearch(query);}let augmented=fullMsg;if(searchResult)augmented+='\n\n## Web Search Results:\n'+searchResult;if(graphResult)augmented+=graphResult;augmented+=getFilesContext();history.push({role:'user',content:augmented});const sys=buildSystemPrompt();let reply='';if(provider==='claude')reply=await callClaude(sys);else if(provider==='azure')reply=await callAzure(sys);else if(provider==='puter')reply=await callPuter(sys);rmEl(tid);addAgent(reply);history.push({role:'assistant',content:reply});}catch(e){rmEl(tid);addAgent('⚠️ '+e.message,true);}loading=false;document.getElementById('sbtn').disabled=false;forceSearch=false;document.getElementById('tool-search').classList.remove('active');inp.focus();}
+async function callClaude(sys){const msgs=history.map(m=>({role:m.role,content:m.content}));const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':C.claude.key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:C.claude.model,max_tokens:4096,system:sys,messages:msgs})});if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'HTTP '+r.status);}const d=await r.json();return d.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');}
+async function callAzure(sys){const {ep,key,dep,ver}=C.azure;const r=await fetch(ep+'/openai/deployments/'+dep+'/chat/completions?api-version='+ver,{method:'POST',headers:{'Content-Type':'application/json','api-key':key},body:JSON.stringify({messages:[{role:'system',content:sys},...history],max_tokens:4096,temperature:0.7})});if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'HTTP '+r.status);}const d=await r.json();return d.choices?.[0]?.message?.content||'No response.';}
+async function callPuter(sys){if(typeof window.puter==='undefined'||!window.puter.ai)throw new Error('Puter.js not available. Please refresh and reconnect.');const msgs=[{role:'system',content:sys},...history];try{const resp=await window.puter.ai.chat(msgs,{model:C.puter.model});if(typeof resp==='string')return resp;if(resp?.text)return resp.text;if(resp?.message?.content){const c=resp.message.content;if(typeof c==='string')return c;if(Array.isArray(c))return c.filter(b=>b.type==='text').map(b=>b.text).join('\n');}if(Array.isArray(resp))return resp.filter(b=>b.type==='text').map(b=>b.text).join('\n');return JSON.stringify(resp);}catch(e){throw new Error('Puter error: '+(e.message||JSON.stringify(e)));}}
+function addUser(t){const e=dc('div','mwrap');e.innerHTML='<div class="muser"><div class="buser">'+esc(t)+'</div></div>';msgs().appendChild(e);scr();}
+let tc=0;
+function addThinking(){const id='tk-'+(++tc),e=dc('div','mwrap');e.id=id;e.innerHTML='<div class="magent"><div class="aicon">🤖</div><div class="bagent"><span class="ptag '+ptag()+'">'+plabel()+'</span><br/><span id="'+id+'-tools"></span><span class="thinking" style="color:var(--muted)">Thinking</span></div></div>';msgs().appendChild(e);scr();return id;}
+function addToolLine(tid,text){const el=document.getElementById(tid+'-tools');if(el){const d=document.createElement('div');d.className='tool-line';d.textContent=text;el.appendChild(d);}}
+function addAgent(t,err){const e=dc('div','mwrap');e.innerHTML='<div class="magent"><div class="aicon">🤖</div><div class="bagent'+(err?' err':'')+'"><span class="ptag '+ptag()+'">'+plabel()+'</span><br/>'+fmt(t)+'</div></div>';msgs().appendChild(e);scr();}
+function note(t){const e=dc('div','snote');e.textContent=t;msgs().appendChild(e);scr();}
+function rmEl(id){const el=document.getElementById(id);if(el)el.remove();}
+function msgs(){return document.getElementById('messages');}
+function scr(){const m=msgs();m.scrollTop=m.scrollHeight;}
+function dc(tag,cls){const e=document.createElement(tag);e.className=cls;return e;}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmt(t){let s=esc(t);s=s.replace(/```[\w]*\n?([\s\S]*?)```/g,'<pre>$1</pre>');s=s.replace(/`([^`]+)`/g,'<code>$1</code>');s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');s=s.replace(/^#{1,3} (.+)$/gm,'<strong>$1</strong>');s=s.replace(/\n/g,'<br/>');return s;}
+document.getElementById('uinput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+window.addEventListener('DOMContentLoaded',function(){renderMemory();renderFileList();updateBadges();updateRedirectUri();selProvider('claude');});
+</script>
+</body>
+</html>
